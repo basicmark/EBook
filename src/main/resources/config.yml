@@ -1,0 +1,7 @@
+ebooks:
+  welcome:
+    pages:
+    - "Welcome to the e-book plugin!\nThis plugin allows books to created whos content is stored in a configuration file for easy editing"
+    - "Not only that but once created the books will stay upto date with any modifications that are made, simply /ebook reload to load in th updated configuration file!"
+starter:
+- welcome

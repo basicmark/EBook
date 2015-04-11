@@ -1,0 +1,17 @@
+name: EBook
+author: basicmark
+description: Electronic Book
+main: io.github.basicmark.ebook.EBook
+startup: postworld
+url: https://github.com/basicmark/EBook
+depend: []
+softdepend: []
+version: 1.0
+commands:
+    ebook:
+        description: Type /ebook ? for more info
+        usage: /ebook ?
+permissions:
+    ebook.cmd.reload:
+        description: Reload the config file
+        default: false
