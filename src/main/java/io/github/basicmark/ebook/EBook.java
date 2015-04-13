@@ -27,6 +27,7 @@ public class EBook extends JavaPlugin implements Listener {
 	static final String displayPrefix = "" + ChatColor.BOLD + ChatColor.AQUA;
 	List<String> starterBooks;
 	private Map<String, List<String>> ebooks;
+	private Map<String, String> authors;
 
 	public void loadConfig() {
 		FileConfiguration config = getConfig();
@@ -45,6 +46,11 @@ public class EBook extends JavaPlugin implements Listener {
 						pages.add(raw_page.replace('&', ChatColor.COLOR_CHAR));
 					}
 					ebooks.put(ebookName, pages);
+
+					String author =  ebookConfigs.getString(ebookName + ".author", null);
+					if (author != null) {
+						authors.put(ebookName,  author);
+					}
 				}
 			}
 			
@@ -53,9 +59,8 @@ public class EBook extends JavaPlugin implements Listener {
 	}
 
 	public void onEnable(){
-		getLogger().info("Enabling EBook");
-
 		ebooks = new HashMap<String, List<String>>();
+		authors = new HashMap<String, String>();
 
 		// Create/load the config file
 		saveDefaultConfig();
@@ -64,7 +69,6 @@ public class EBook extends JavaPlugin implements Listener {
 	}
 
 	public void onDisable(){
-		getLogger().info("Disabling EBook");
 	}
 
 	public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
@@ -73,14 +77,43 @@ public class EBook extends JavaPlugin implements Listener {
 				if (sender.hasPermission("ebook.cmd.reload")) {
 					reloadConfig();
 					loadConfig();
+					sender.sendMessage(ChatColor.GREEN + "Configuration reloaded");
 				} else {
 					sender.sendMessage(ChatColor.RED + "You don't have permission to run this command");
 				}
 				return true;
+			} else if ((args.length == 1) && (args[0].equalsIgnoreCase("list"))) {
+				if (sender.hasPermission("ebook.cmd.list")) {
+					sender.sendMessage(ChatColor.GREEN + "Available books");
+					for (String book : ebooks.keySet()) {
+						if (sender.hasPermission("ebook.book." + book)) {
+							String info = " - " + book;
+
+							if (authors.containsKey(book)) {
+								info += " (by " + authors.get(book) + ")";
+							}
+							sender.sendMessage(info);
+						}
+					}
+				} else {
+					sender.sendMessage(ChatColor.RED + "You don't have permission to run this command");
+				}
+				return true;
+			} else if ((args.length == 1) && (args[0].equals("?"))) {
+				sender.sendMessage(ChatColor.GREEN + "EBook help:");
+				sender.sendMessage("/ebook reload :- Reload the config");
+				sender.sendMessage("/ebook list :- List the books you have access to");
+				sender.sendMessage("/ebook ? :- This help");
+				sender.sendMessage("/ebook <book name> :- Gives you a copy of the specified book");
+				return true;
 			} else if ((args.length == 1) && ebooks.containsKey(args[0])) {
 				if (sender instanceof Player) {
-					Player player = (Player) sender;
-					givePlayer(player, args[0]);
+					if (sender.hasPermission("ebook.book." + args[0])) {
+						Player player = (Player) sender;
+						givePlayer(player, args[0]);
+					} else {
+						sender.sendMessage(ChatColor.RED + "You don't have permission to access this book");
+					}
 				} else {
 					sender.sendMessage(ChatColor.RED + "This command can only be issued by players");
 				}
@@ -105,6 +138,9 @@ public class EBook extends JavaPlugin implements Listener {
 
 		bookMeta.setDisplayName(getDisplayName(book));
 		bookMeta.setPages(customPages);
+		if (authors.containsKey(book)) {
+			bookMeta.setAuthor(authors.get(book));
+		}
 		newBook.setItemMeta(bookMeta);
 
 		HashMap<Integer,ItemStack> remainingItems = player.getInventory().addItem(newBook);

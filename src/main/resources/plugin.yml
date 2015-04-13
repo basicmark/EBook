@@ -12,6 +12,9 @@ commands:
         description: Type /ebook ? for more info
         usage: /ebook ?
 permissions:
+    ebook.cmd.list:
+        description: List available ebooks
+        default: true
     ebook.cmd.reload:
         description: Reload the config file
         default: false
